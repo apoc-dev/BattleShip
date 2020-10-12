@@ -11,9 +11,10 @@ public class DotComGame {
   final ArrayList<DotCom> Dotcoms = new ArrayList<>();
 
   public static void main(String[] args) {
-
+        long start = System.currentTimeMillis();
         DotComGame game = new DotComGame();
         game.prepareGame();
+        System.out.println(System.currentTimeMillis() - start+ " milliseconds to prepare");
         game.startGame();
 
     }
@@ -57,8 +58,8 @@ public class DotComGame {
             givenCells.add(Dotcoms.get(i).getCells());
         }
 
-        System.out.println("backtracking: "+toBacktrack);
-        System.out.println("given cells before backtrack: "+ givenCells);
+        //System.out.println("backtracking: "+toBacktrack);
+        //System.out.println("given cells before backtrack: "+ givenCells);
 
         if (!givenCells.isEmpty()) {
 
@@ -97,7 +98,7 @@ public class DotComGame {
             backtrack_result = true;
         }
 
-        System.out.println("given cells after backtrack: "+ givenCells);
+        //System.out.println("given cells after backtrack: "+ givenCells);
         return backtrack_result;
     }
 
