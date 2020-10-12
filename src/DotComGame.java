@@ -5,8 +5,8 @@ import java.util.*;
 public class DotComGame {
 
   final int dotcom_length = 2;
-  final int field_size = 4;
-  final int dotcom_numbers = 8;
+  final int field_size = 3;
+  final int dotcom_numbers = 4;
 
   final ArrayList<DotCom> Dotcoms = new ArrayList<>();
 
