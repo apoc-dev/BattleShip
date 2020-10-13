@@ -1,23 +1,37 @@
 package src;
 
+import javax.swing.*;
 import java.util.*;
 
 public class DotComGame {
 
-  final int dotcom_length = 5;
-  final int field_size = 10;
-  final int dotcom_numbers = 20;
+  final int dotcom_length = 4;
+  final int field_size = 5;
+  final int dotcom_numbers = 6;
+
+  final boolean DEBUG = true;
+  final boolean DEBUG_BACKTRACKING = false;
+  final boolean START_GAME = false;
+
 
   final ArrayList<DotCom> Dotcoms = new ArrayList<>();
 
   TerminalColours colours = new TerminalColours();
 
   public static void main(String[] args) {
-        long start = System.currentTimeMillis();
+
+      long start = System.currentTimeMillis();
+
         DotComGame game = new DotComGame();
         game.prepareGame();
+
         System.out.println(System.currentTimeMillis() - start+ " milliseconds to prepare");
-        game.startGame();
+
+        if(game.START_GAME)
+            game.startGame();
+
+        if(!game.START_GAME)
+            game.printGame();
 
     }
 
@@ -32,9 +46,14 @@ public class DotComGame {
                 boolean column_printed = false;
                 System.out.print("|");
                 for (DotCom dotcom : Dotcoms){
+                    ArrayList<String> cells;
 
+                    if (DEBUG){
+                        cells = dotcom.getCells();
+                    }else{
+                        cells = dotcom.getCells_hit();
+                    }
 
-                    ArrayList<String> cells = dotcom.getCells();
 
                     for (String cell : cells){
 
@@ -74,7 +93,8 @@ public class DotComGame {
         int leftToPlace = dotcom_numbers;
 
         for (DotCom dotcom : Dotcoms){
-            System.out.println("generating cells for "+dotcom);
+            if (DEBUG)
+                System.out.println("generating cells for "+dotcom);
 
             while(true){
 
@@ -84,8 +104,12 @@ public class DotComGame {
 
                     if(backtrackDotcoms(toTest, leftToPlace)){
                         dotcom.setDotCom(toTest);
-                        System.out.println("success for "+dotcom+" "+toTest);
-                        System.out.println();
+
+                        if (DEBUG){
+                            System.out.println("success for "+dotcom+" "+toTest);
+                            System.out.println();
+                        }
+
                         leftToPlace--;
                         break;
                     }
@@ -102,9 +126,10 @@ public class DotComGame {
         for (int i = 0; i < (dotcom_numbers - dotcomsToPlace); i++) {
             givenCells.add(Dotcoms.get(i).getCells());
         }
-
-        //System.out.println("backtracking: "+toBacktrack);
-        //System.out.println("given cells before backtrack: "+ givenCells);
+        if(DEBUG_BACKTRACKING){
+            System.out.println("backtracking: "+toBacktrack);
+            System.out.println("given cells before backtrack: "+ givenCells);
+        }
         givenCells.add(toBacktrack);
         dotcomsToPlace--;
 
@@ -137,7 +162,8 @@ public class DotComGame {
             backtrack_result = true;
         }
 
-        //System.out.println("given cells after backtrack: "+ givenCells);
+        if(DEBUG_BACKTRACKING)
+            System.out.println("given cells after backtrack: "+ givenCells);
         return backtrack_result;
     }
 

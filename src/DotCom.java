@@ -6,6 +6,8 @@ public class DotCom {
 
     String colour;
     ArrayList<String> cells = new ArrayList<>();
+    ArrayList<String> cells_hit = new ArrayList<>();
+
 
     DotCom(String col){
         colour = col;
@@ -23,13 +25,17 @@ public class DotCom {
         return this.cells;
     }
 
+    public ArrayList<String> getCells_hit(){
+        return this.cells_hit;
+    }
+
     public String checkYourself(String stringTip){
 
         String result = "Miss";
 
         if (this.cells.contains(stringTip)){
             result = "Hit";
-
+            this.cells_hit.add(stringTip);
             this.cells.remove(stringTip);
         }
 
