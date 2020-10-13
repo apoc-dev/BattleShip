@@ -4,11 +4,13 @@ import java.util.*;
 
 public class DotComGame {
 
-  final int dotcom_length = 2;
-  final int field_size = 4;
-  final int dotcom_numbers = 8;
+  final int dotcom_length = 5;
+  final int field_size = 10;
+  final int dotcom_numbers = 20;
 
   final ArrayList<DotCom> Dotcoms = new ArrayList<>();
+
+  TerminalColours colours = new TerminalColours();
 
   public static void main(String[] args) {
         long start = System.currentTimeMillis();
@@ -19,10 +21,53 @@ public class DotComGame {
 
     }
 
+    public void printGame(){
+
+        for (int row = 0; row < field_size; row++)
+        {
+            System.out.println();
+
+            for (int column = 0; column < field_size; column++)
+            {
+                boolean column_printed = false;
+                System.out.print("|");
+                for (DotCom dotcom : Dotcoms){
+
+
+                    ArrayList<String> cells = dotcom.getCells();
+
+                    for (String cell : cells){
+
+                        if ( cell.equals((toAlphabetic(row)) + Integer.toString(column))){
+
+                            System.out.print(dotcom.getColour()+"X");
+                            System.out.print(colours.ANSI_RESET);
+                            column_printed = true;
+                        }
+                        }
+
+                }
+                if (!column_printed){
+                    System.out.print("O");
+                }
+            }
+
+            System.out.print("|");
+        }
+        System.out.println();
+        System.out.println();
+    }
+
     public void prepareGame(){
 
+        if (!(field_size*field_size/dotcom_length >= dotcom_numbers)){
+            System.out.println("Error: Game numbers are invalid");
+            System.exit(0);
+        }
+
+        String dotcomColour = colours.randomTerminalColour();
         for (int i = 0; i < dotcom_numbers; i++) {
-            Dotcoms.add(new DotCom());
+            Dotcoms.add(new DotCom(colours.randomTerminalColour()));
         }
 
         ArrayList<String> toTest;
@@ -60,38 +105,32 @@ public class DotComGame {
 
         //System.out.println("backtracking: "+toBacktrack);
         //System.out.println("given cells before backtrack: "+ givenCells);
+        givenCells.add(toBacktrack);
+        dotcomsToPlace--;
 
-        if (!givenCells.isEmpty()) {
+        for (int i = 0; i < dotcomsToPlace; i++) {
 
-            givenCells.add(toBacktrack);
-            dotcomsToPlace--;
+            for (int j = 0; j < 1000; j++) {
 
-            for (int i = 0; i < dotcomsToPlace; i++) {
+                cells = generateCells();
 
-                for (int j = 0; j < 100; j++) {
+                // check if cells lap over already chosen cells
+                for (ArrayList<String> list : givenCells) {
 
-                    cells = generateCells();
+                    if (Collections.disjoint(list, cells)) {
+                        backtrack_result = true;
 
-                    // check if cells lap over already chosen cells
-                    for (ArrayList<String> list : givenCells) {
-
-                        if (Collections.disjoint(list, cells)) {
-                            backtrack_result = true;
-
-                        } else if (!Collections.disjoint(list, cells)) {
-                            backtrack_result = false;
-                            break;
-                        }
-                    }
-
-                    if(backtrack_result) {
-                        givenCells.add(cells);
+                    } else if (!Collections.disjoint(list, cells)) {
+                        backtrack_result = false;
                         break;
                     }
                 }
+
+                if(backtrack_result) {
+                    givenCells.add(cells);
+                    break;
+                }
             }
-        } else{
-            backtrack_result = true;
         }
 
         if (dotcomsToPlace == 0) { //base-case
@@ -148,7 +187,7 @@ public class DotComGame {
         boolean alive = true;
 
         while (alive){
-
+            printGame();
             Scanner myScanner = new Scanner(System.in);  // Create a Scanner object
             System.out.println("Tip?");
 

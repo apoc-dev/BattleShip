@@ -4,10 +4,19 @@ import java.util.ArrayList;
 
 public class DotCom {
 
+    String colour;
     ArrayList<String> cells = new ArrayList<>();
+
+    DotCom(String col){
+        colour = col;
+    }
 
     public void setDotCom(ArrayList<String> cells){
         this.cells = cells;
+    }
+
+    public String getColour(){
+        return colour;
     }
 
     public ArrayList<String> getCells(){
