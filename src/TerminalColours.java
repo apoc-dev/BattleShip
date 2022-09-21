@@ -15,7 +15,7 @@ public class TerminalColours {
 
     public static final String[] colours = {ANSI_BLACK, ANSI_RED, ANSI_GREEN, ANSI_YELLOW, ANSI_BLUE, ANSI_PURPLE, ANSI_CYAN, ANSI_WHITE};
 
-    public String randomTerminalColour(){
+    public String randomTerminalColor(){
 
         int randIndex = (int) (Math.random() * colours.length);
 

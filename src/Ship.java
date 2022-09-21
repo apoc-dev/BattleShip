@@ -2,18 +2,18 @@ package src;
 
 import java.util.ArrayList;
 
-public class DotCom {
+public class Ship {
 
     String colour;
     ArrayList<String> cells = new ArrayList<>();
     ArrayList<String> cells_hit = new ArrayList<>();
 
 
-    DotCom(String col){
+    Ship(String col){
         colour = col;
     }
 
-    public void setDotCom(ArrayList<String> cells){
+    public void setShips(ArrayList<String> cells){
         this.cells = cells;
     }
 

@@ -3,26 +3,26 @@ package src;
 import javax.swing.*;
 import java.util.*;
 
-public class DotComGame {
+public class BattleShip {
 
-  final int dotcom_length = 4;
-  final int field_size = 5;
-  final int dotcom_numbers = 6;
+  final int shipLength = 4;
+  final int fieldSize = 5;
+  final int shipNumber = 3;
 
   final boolean DEBUG = true;
   final boolean DEBUG_BACKTRACKING = false;
   final boolean START_GAME = false;
 
 
-  final ArrayList<DotCom> Dotcoms = new ArrayList<>();
+  final ArrayList<Ship> Ships = new ArrayList<>();
 
-  TerminalColours colours = new TerminalColours();
+  TerminalColours color = new TerminalColours();
 
   public static void main(String[] args) {
 
       long start = System.currentTimeMillis();
 
-        DotComGame game = new DotComGame();
+        BattleShip game = new BattleShip();
         game.prepareGame();
 
         System.out.println(System.currentTimeMillis() - start+ " milliseconds to prepare");
@@ -37,21 +37,21 @@ public class DotComGame {
 
     public void printGame(){
 
-        for (int row = 0; row < field_size; row++)
+        for (int row = 0; row < fieldSize; row++)
         {
             System.out.println();
 
-            for (int column = 0; column < field_size; column++)
+            for (int column = 0; column < fieldSize; column++)
             {
-                boolean column_printed = false;
+                boolean columnPrinted = false;
                 System.out.print("|");
-                for (DotCom dotcom : Dotcoms){
+                for (Ship ship : Ships){
                     ArrayList<String> cells;
 
                     if (DEBUG){
-                        cells = dotcom.getCells();
+                        cells = ship.getCells();
                     }else{
-                        cells = dotcom.getCells_hit();
+                        cells = ship.getCells_hit();
                     }
 
 
@@ -59,14 +59,14 @@ public class DotComGame {
 
                         if ( cell.equals((toAlphabetic(row)) + Integer.toString(column))){
 
-                            System.out.print(dotcom.getColour()+"X");
-                            System.out.print(colours.ANSI_RESET);
-                            column_printed = true;
+                            System.out.print(ship.getColour()+"X");
+                            System.out.print(color.ANSI_RESET);
+                            columnPrinted = true;
                         }
                         }
 
                 }
-                if (!column_printed){
+                if (!columnPrinted){
                     System.out.print("O");
                 }
             }
@@ -79,34 +79,34 @@ public class DotComGame {
 
     public void prepareGame(){
 
-        if (!(field_size*field_size/dotcom_length >= dotcom_numbers)){
+        if (!(fieldSize*fieldSize/shipLength >= shipNumber)){
             System.out.println("Error: Game numbers are invalid");
             System.exit(0);
         }
 
-        String dotcomColour = colours.randomTerminalColour();
-        for (int i = 0; i < dotcom_numbers; i++) {
-            Dotcoms.add(new DotCom(colours.randomTerminalColour()));
+        String shipColor = color.randomTerminalColor();
+        for (int i = 0; i < shipNumber; i++) {
+            Ships.add(new Ship(color.randomTerminalColor()));
         }
 
         ArrayList<String> toTest;
-        int leftToPlace = dotcom_numbers;
+        int leftToPlace = shipNumber;
 
-        for (DotCom dotcom : Dotcoms){
+        for (Ship ship : Ships){
             if (DEBUG)
-                System.out.println("generating cells for "+dotcom);
+                System.out.println("generating cells for "+ship);
 
             while(true){
 
                 toTest = generateCells();
 
-                if (!checkDotcoms(toTest)){
+                if (!checkShips(toTest)){
 
-                    if(backtrackDotcoms(toTest, leftToPlace)){
-                        dotcom.setDotCom(toTest);
+                    if(backtrackShips(toTest, leftToPlace)){
+                        ship.setShips(toTest);
 
                         if (DEBUG){
-                            System.out.println("success for "+dotcom+" "+toTest);
+                            System.out.println("success for "+ship+" "+toTest);
                             System.out.println();
                         }
 
@@ -118,22 +118,22 @@ public class DotComGame {
         }
     }
 
-    private boolean backtrackDotcoms(ArrayList<String> toBacktrack, int dotcomsToPlace){
-        boolean backtrack_result = false;
+    private boolean backtrackShips(ArrayList<String> toBacktrack, int shipsToPlace){
+        boolean backtrackResult = false;
         ArrayList<String> cells;
         ArrayList<ArrayList<String>> givenCells = new ArrayList<>();
 
-        for (int i = 0; i < (dotcom_numbers - dotcomsToPlace); i++) {
-            givenCells.add(Dotcoms.get(i).getCells());
+        for (int i = 0; i < (shipNumber - shipsToPlace); i++) {
+            givenCells.add(Ships.get(i).getCells());
         }
         if(DEBUG_BACKTRACKING){
             System.out.println("backtracking: "+toBacktrack);
             System.out.println("given cells before backtrack: "+ givenCells);
         }
         givenCells.add(toBacktrack);
-        dotcomsToPlace--;
+        shipsToPlace--;
 
-        for (int i = 0; i < dotcomsToPlace; i++) {
+        for (int i = 0; i < shipsToPlace; i++) {
 
             for (int j = 0; j < 1000; j++) {
 
@@ -143,37 +143,37 @@ public class DotComGame {
                 for (ArrayList<String> list : givenCells) {
 
                     if (Collections.disjoint(list, cells)) {
-                        backtrack_result = true;
+                        backtrackResult = true;
 
                     } else if (!Collections.disjoint(list, cells)) {
-                        backtrack_result = false;
+                        backtrackResult = false;
                         break;
                     }
                 }
 
-                if(backtrack_result) {
+                if(backtrackResult) {
                     givenCells.add(cells);
                     break;
                 }
             }
         }
 
-        if (dotcomsToPlace == 0) { //base-case
-            backtrack_result = true;
+        if (shipsToPlace == 0) { //base-case
+            backtrackResult = true;
         }
 
         if(DEBUG_BACKTRACKING)
             System.out.println("given cells after backtrack: "+ givenCells);
-        return backtrack_result;
+        return backtrackResult;
     }
 
-    public boolean checkDotcoms(ArrayList<String> cells){
+    public boolean checkShips(ArrayList<String> cells){
 
         boolean result = false;
 
-        for (DotCom dotcom : Dotcoms){
+        for (Ship ship : Ships){
 
-            if (!Collections.disjoint(cells, dotcom.getCells())){
+            if (!Collections.disjoint(cells, ship.getCells())){
                 result = true;
             }
         }
@@ -186,21 +186,21 @@ public class DotComGame {
         int alignment = (int) (Math.random() * 2);
 
         if (alignment == 0){ // x graph
-            int x = (int) (Math.random() * (field_size - dotcom_length +1));
-            int y = (int) (Math.random() * field_size);
+            int x = (int) (Math.random() * (fieldSize - shipLength +1));
+            int y = (int) (Math.random() * fieldSize);
       
-            //build dotcom with specified length in "dotcom_length"
-            for (int i = 0; i < dotcom_length; i++) {
+            //build ship with specified length in "ship_length"
+            for (int i = 0; i < shipLength; i++) {
                 cells.add( toAlphabetic(y) + (x+i));
             }
 
         }
         if (alignment == 1){ // y graph
-            int x = (int) (Math.random() * field_size);
-            int y = (int) (Math.random() * (field_size - dotcom_length +1));
+            int x = (int) (Math.random() * fieldSize);
+            int y = (int) (Math.random() * (fieldSize - shipLength +1));
       
-            //build dotcom with specified length in "dotcom_length"
-            for (int i = 0; i < dotcom_length; i++) {
+            //build ship with specified length in "ship_length"
+            for (int i = 0; i < shipLength; i++) {
                 cells.add( toAlphabetic(y+i) + (x));
             }
 
@@ -218,13 +218,13 @@ public class DotComGame {
             System.out.println("Tip?");
 
             String tip = myScanner.nextLine().toUpperCase();
-            Iterator<DotCom> itr = Dotcoms.iterator();
+            Iterator<Ship> itr = Ships.iterator();
 
             while (itr.hasNext()){
 
-                DotCom dotcom = itr.next();
+                Ship ship = itr.next();
 
-                String result = dotcom.checkYourself(tip);
+                String result = ship.checkYourself(tip);
                 System.out.println(result);
 
                 if (result.equals("submerged")){
@@ -233,7 +233,7 @@ public class DotComGame {
             }
 
             totalTips++;
-            if (Dotcoms.isEmpty()){
+            if (Ships.isEmpty()){
                 alive = false;
                 System.out.println(totalTips + " tips needed");
             }
