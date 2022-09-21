@@ -1,4 +1,4 @@
-# dotcomgame
- Basically battleship but with dotcoms
+# battleship
+ Basically battleship but with smart ship placement
 
-Also implemented a logic to always place as many dotcoms as possible. (tried to use backtracking)
+Implemented a logic to always place as many ships as possible. (tried to use backtracking)
