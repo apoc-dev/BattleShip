@@ -4,9 +4,9 @@ import java.util.*;
 
 public class BattleShip {
 
-    final int shipLength = 5;
-    final int fieldSize = 50;
-    final int numberOfShipsToPlace = 200;
+    final int shipLength = 6;
+    final int fieldSize = 10;
+    final int numberOfShipsToPlace = 16;
 
     final boolean DEBUG = true;
     final boolean DEBUG_BACKTRACKING = false;
@@ -83,51 +83,62 @@ public class BattleShip {
             ships.add(new Ship(color.randomTerminalColor()));
         }
         
-        boolean shipsPlaced = false;
-        for (int run = 0; run < 10000; run++) {
-            ships.get(0).setCells(generateCells());
-            if(placeShips(numberOfShipsToPlace - 1,0)){
-                shipsPlaced = true;
-                break;
-            }
-        }
-
-        if(!shipsPlaced){
-            System.out.println("Ship placement failed. Terminating...");
+        if(!placeShips(numberOfShipsToPlace)){
+            System.out.println("Ship placement failed. Terminating.");
             System.exit(1);
         }
 
 
     }
 
-    private boolean placeShips(int shipsToPlace, int depth){
-        if(shipsToPlace == 0){
-            return true;
-        }else if(shipsToPlace == numberOfShipsToPlace){
-            return false;
-        }
-        int currentShip = numberOfShipsToPlace - shipsToPlace;
+    private boolean placeShips(int shipsToPlace){
+        
+        int maxDepth = 100;
+        int maxBacktrackTries = 10;
+        int currentBacktrackIndex = 0;
+        int currentDepth = 0;
+        int currentShipIndex = 0;
+        int backtrackIndex = 1;
+        ArrayList<String> randomCells;
 
-        if(depth < 50){
-            ArrayList<String> randomCells = generateCells();
+        while(currentShipIndex < shipsToPlace){
+
+            randomCells = generateCells();
+
             if(!isCollision(randomCells)){
-                ships.get(currentShip).setCells(randomCells);
-                if(placeShips(shipsToPlace-1, 0)){
-                    return true;
-                }
+                ships.get(currentShipIndex).setCells(randomCells);
+                currentShipIndex++;
+                currentDepth = 0;
             }else{
-                if(placeShips(shipsToPlace, depth + 1)){
-                    return true;
-                }
+                currentDepth++;
             }
-        }else{
-            if(placeShips(shipsToPlace + 1, 0) && (shipsToPlace + 1) < numberOfShipsToPlace){
-                return true;
-            }
-            
-        }
 
-        return false;
+            if(currentDepth >= maxDepth){
+                if(currentBacktrackIndex > maxBacktrackTries){
+                    backtrackIndex++;
+                    currentBacktrackIndex = 0;
+                    currentShipIndex = currentShipIndex - backtrackIndex;
+                }else{
+                    currentShipIndex--;
+                    currentBacktrackIndex++;
+                }
+                if(currentShipIndex < 0){
+                    currentShipIndex = 0;
+                }
+                resetShips(currentShipIndex);
+                currentDepth = 0;
+            }
+
+        }
+        
+        return true;
+
+    }
+
+    private void resetShips(int newEnd){
+        for(int shipIndex = newEnd; shipIndex < numberOfShipsToPlace; shipIndex++){
+            ships.get(shipIndex).setCells(new ArrayList<String>());
+        }
     }
 
 
