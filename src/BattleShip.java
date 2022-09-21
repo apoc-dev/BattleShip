@@ -1,19 +1,18 @@
 package src;
 
-import javax.swing.*;
 import java.util.*;
 
 public class BattleShip {
 
-    final int shipLength = 4;
-    final int fieldSize = 5;
-    final int numberOfShipsToPlace = 3;
+    final int shipLength = 5;
+    final int fieldSize = 50;
+    final int numberOfShipsToPlace = 200;
 
     final boolean DEBUG = true;
     final boolean DEBUG_BACKTRACKING = false;
     final boolean START_GAME = false;
 
-    final ArrayList<Ship> Ships = new ArrayList<>();
+    final ArrayList<Ship> ships = new ArrayList<>();
 
     TerminalColours color = new TerminalColours();
 
@@ -42,7 +41,7 @@ public class BattleShip {
             for (int column = 0; column < fieldSize; column++) {
                 boolean columnPrinted = false;
                 System.out.print("|");
-                for (Ship ship : Ships) {
+                for (Ship ship : ships) {
                     ArrayList<String> cells;
 
                     if (DEBUG) {
@@ -80,92 +79,62 @@ public class BattleShip {
             System.exit(0);
         }
 
-        String shipColor = color.randomTerminalColor();
         for (int i = 0; i < numberOfShipsToPlace; i++) {
-            Ships.add(new Ship(color.randomTerminalColor()));
+            ships.add(new Ship(color.randomTerminalColor()));
         }
-
-        ArrayList<String> randomCells;
-        int leftToPlace = numberOfShipsToPlace;
-
-        for (Ship ship : Ships) {
-            if (DEBUG)
-                System.out.println("generating cells for " + ship);
-
-            while (true) {
-
-                randomCells = generateCells();
-
-                if (!isCollision(randomCells)) {
-
-                    if (backtrackShips(randomCells, leftToPlace)) {
-                        ship.setCells(randomCells);
-
-                        if (DEBUG) {
-                            System.out.println("success for " + ship + " " + randomCells);
-                            System.out.println();
-                        }
-
-                        leftToPlace--;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    private boolean backtrackShips(ArrayList<String> toBacktrack, int shipsToPlace) {
-        boolean backtrackResult = false;
-        ArrayList<String> cells;
-        ArrayList<ArrayList<String>> givenCells = new ArrayList<>();
-
-        for (int i = 0; i < (numberOfShipsToPlace - shipsToPlace); i++) {
-            givenCells.add(Ships.get(i).getCells());
-        }
-        if (DEBUG_BACKTRACKING) {
-            System.out.println("backtracking: " + toBacktrack);
-            System.out.println("given cells before backtrack: " + givenCells);
-        }
-        givenCells.add(toBacktrack);
-        shipsToPlace--;
-
-        for (int i = 0; i < shipsToPlace; i++) {
-
-            for (int j = 0; j < 1000; j++) {
-
-                cells = generateCells();
-
-                // check if cells lap over already chosen cells
-                for (ArrayList<String> list : givenCells) {
-
-                    if (Collections.disjoint(list, cells)) {
-                        backtrackResult = true;
-
-                    } else if (!Collections.disjoint(list, cells)) {
-                        backtrackResult = false;
-                        break;
-                    }
-                }
-
-                if (backtrackResult) {
-                    givenCells.add(cells);
-                    break;
-                }
+        
+        boolean shipsPlaced = false;
+        for (int run = 0; run < 10000; run++) {
+            ships.get(0).setCells(generateCells());
+            if(placeShips(numberOfShipsToPlace - 1,0)){
+                shipsPlaced = true;
+                break;
             }
         }
 
-        if (shipsToPlace == 0) { // base-case
-            backtrackResult = true;
+        if(!shipsPlaced){
+            System.out.println("Ship placement failed. Terminating...");
+            System.exit(1);
         }
 
-        if (DEBUG_BACKTRACKING)
-            System.out.println("given cells after backtrack: " + givenCells);
-        return backtrackResult;
+
     }
+
+    private boolean placeShips(int shipsToPlace, int depth){
+        if(shipsToPlace == 0){
+            return true;
+        }else if(shipsToPlace == numberOfShipsToPlace){
+            return false;
+        }
+        int currentShip = numberOfShipsToPlace - shipsToPlace;
+
+        if(depth < 50){
+            ArrayList<String> randomCells = generateCells();
+            if(!isCollision(randomCells)){
+                ships.get(currentShip).setCells(randomCells);
+                if(placeShips(shipsToPlace-1, 0)){
+                    return true;
+                }
+            }else{
+                if(placeShips(shipsToPlace, depth + 1)){
+                    return true;
+                }
+            }
+        }else{
+            if(placeShips(shipsToPlace + 1, 0) && (shipsToPlace + 1) < numberOfShipsToPlace){
+                return true;
+            }
+            
+        }
+
+        return false;
+    }
+
+
 
     public boolean isCollision(ArrayList<String> cells) {
 
-        for (Ship ship : Ships) {
+        for (Ship ship : ships) {
 
             if (!Collections.disjoint(cells, ship.getCells())) {
                 return true;
@@ -212,7 +181,7 @@ public class BattleShip {
             System.out.println("Tip?");
 
             String tip = myScanner.nextLine().toUpperCase();
-            Iterator<Ship> itr = Ships.iterator();
+            Iterator<Ship> itr = ships.iterator();
 
             while (itr.hasNext()) {
 
@@ -227,7 +196,7 @@ public class BattleShip {
             }
 
             totalTips++;
-            if (Ships.isEmpty()) {
+            if (ships.isEmpty()) {
                 alive = false;
                 System.out.println(totalTips + " tips needed");
             }
