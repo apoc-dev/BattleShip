@@ -4,9 +4,9 @@ import java.util.*;
 
 public class BattleShip {
 
-    final int shipLength = 6;
-    final int fieldSize = 10;
-    final int numberOfShipsToPlace = 16;
+    final int shipLength = 3;
+    final int fieldSize = 5;
+    final int numberOfShipsToPlace = 8;
 
     final boolean DEBUG = true;
     final boolean DEBUG_BACKTRACKING = false;
