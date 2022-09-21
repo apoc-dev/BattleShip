@@ -5,68 +5,64 @@ import java.util.*;
 
 public class BattleShip {
 
-  final int shipLength = 4;
-  final int fieldSize = 5;
-  final int shipNumber = 3;
+    final int shipLength = 4;
+    final int fieldSize = 5;
+    final int numberOfShipsToPlace = 3;
 
-  final boolean DEBUG = true;
-  final boolean DEBUG_BACKTRACKING = false;
-  final boolean START_GAME = false;
+    final boolean DEBUG = true;
+    final boolean DEBUG_BACKTRACKING = false;
+    final boolean START_GAME = false;
 
+    final ArrayList<Ship> Ships = new ArrayList<>();
 
-  final ArrayList<Ship> Ships = new ArrayList<>();
+    TerminalColours color = new TerminalColours();
 
-  TerminalColours color = new TerminalColours();
+    public static void main(String[] args) {
 
-  public static void main(String[] args) {
-
-      long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis();
 
         BattleShip game = new BattleShip();
         game.prepareGame();
 
-        System.out.println(System.currentTimeMillis() - start+ " milliseconds to prepare");
+        System.out.println(System.currentTimeMillis() - start + " milliseconds to prepare");
 
-        if(game.START_GAME)
+        if (game.START_GAME)
             game.startGame();
 
-        if(!game.START_GAME)
+        if (!game.START_GAME)
             game.printGame();
 
     }
 
-    public void printGame(){
+    public void printGame() {
 
-        for (int row = 0; row < fieldSize; row++)
-        {
+        for (int row = 0; row < fieldSize; row++) {
             System.out.println();
 
-            for (int column = 0; column < fieldSize; column++)
-            {
+            for (int column = 0; column < fieldSize; column++) {
                 boolean columnPrinted = false;
                 System.out.print("|");
-                for (Ship ship : Ships){
+                for (Ship ship : Ships) {
                     ArrayList<String> cells;
 
-                    if (DEBUG){
+                    if (DEBUG) {
                         cells = ship.getCells();
-                    }else{
+                    } else {
                         cells = ship.getCells_hit();
                     }
 
+                    for (String cell : cells) {
 
-                    for (String cell : cells){
+                        if (cell.equals((toAlphabetic(row)) + Integer.toString(column))) {
 
-                        if ( cell.equals((toAlphabetic(row)) + Integer.toString(column))){
-
-                            System.out.print(ship.getColour()+"X");
+                            System.out.print(ship.getColor() + "X");
                             System.out.print(color.ANSI_RESET);
                             columnPrinted = true;
                         }
-                        }
+                    }
 
                 }
-                if (!columnPrinted){
+                if (!columnPrinted) {
                     System.out.print("O");
                 }
             }
@@ -77,36 +73,36 @@ public class BattleShip {
         System.out.println();
     }
 
-    public void prepareGame(){
+    public void prepareGame() {
 
-        if (!(fieldSize*fieldSize/shipLength >= shipNumber)){
+        if (!(fieldSize * fieldSize / shipLength >= numberOfShipsToPlace)) {
             System.out.println("Error: Game numbers are invalid");
             System.exit(0);
         }
 
         String shipColor = color.randomTerminalColor();
-        for (int i = 0; i < shipNumber; i++) {
+        for (int i = 0; i < numberOfShipsToPlace; i++) {
             Ships.add(new Ship(color.randomTerminalColor()));
         }
 
-        ArrayList<String> toTest;
-        int leftToPlace = shipNumber;
+        ArrayList<String> randomCells;
+        int leftToPlace = numberOfShipsToPlace;
 
-        for (Ship ship : Ships){
+        for (Ship ship : Ships) {
             if (DEBUG)
-                System.out.println("generating cells for "+ship);
+                System.out.println("generating cells for " + ship);
 
-            while(true){
+            while (true) {
 
-                toTest = generateCells();
+                randomCells = generateCells();
 
-                if (!checkShips(toTest)){
+                if (!isCollision(randomCells)) {
 
-                    if(backtrackShips(toTest, leftToPlace)){
-                        ship.setShips(toTest);
+                    if (backtrackShips(randomCells, leftToPlace)) {
+                        ship.setCells(randomCells);
 
-                        if (DEBUG){
-                            System.out.println("success for "+ship+" "+toTest);
+                        if (DEBUG) {
+                            System.out.println("success for " + ship + " " + randomCells);
                             System.out.println();
                         }
 
@@ -118,17 +114,17 @@ public class BattleShip {
         }
     }
 
-    private boolean backtrackShips(ArrayList<String> toBacktrack, int shipsToPlace){
+    private boolean backtrackShips(ArrayList<String> toBacktrack, int shipsToPlace) {
         boolean backtrackResult = false;
         ArrayList<String> cells;
         ArrayList<ArrayList<String>> givenCells = new ArrayList<>();
 
-        for (int i = 0; i < (shipNumber - shipsToPlace); i++) {
+        for (int i = 0; i < (numberOfShipsToPlace - shipsToPlace); i++) {
             givenCells.add(Ships.get(i).getCells());
         }
-        if(DEBUG_BACKTRACKING){
-            System.out.println("backtracking: "+toBacktrack);
-            System.out.println("given cells before backtrack: "+ givenCells);
+        if (DEBUG_BACKTRACKING) {
+            System.out.println("backtracking: " + toBacktrack);
+            System.out.println("given cells before backtrack: " + givenCells);
         }
         givenCells.add(toBacktrack);
         shipsToPlace--;
@@ -151,89 +147,87 @@ public class BattleShip {
                     }
                 }
 
-                if(backtrackResult) {
+                if (backtrackResult) {
                     givenCells.add(cells);
                     break;
                 }
             }
         }
 
-        if (shipsToPlace == 0) { //base-case
+        if (shipsToPlace == 0) { // base-case
             backtrackResult = true;
         }
 
-        if(DEBUG_BACKTRACKING)
-            System.out.println("given cells after backtrack: "+ givenCells);
+        if (DEBUG_BACKTRACKING)
+            System.out.println("given cells after backtrack: " + givenCells);
         return backtrackResult;
     }
 
-    public boolean checkShips(ArrayList<String> cells){
+    public boolean isCollision(ArrayList<String> cells) {
 
-        boolean result = false;
+        for (Ship ship : Ships) {
 
-        for (Ship ship : Ships){
-
-            if (!Collections.disjoint(cells, ship.getCells())){
-                result = true;
+            if (!Collections.disjoint(cells, ship.getCells())) {
+                return true;
             }
         }
-        return result;
+        return false;
     }
 
-    public ArrayList<String> generateCells(){
+    public ArrayList<String> generateCells() {
         ArrayList<String> cells = new ArrayList<>();
 
         int alignment = (int) (Math.random() * 2);
 
-        if (alignment == 0){ // x graph
-            int x = (int) (Math.random() * (fieldSize - shipLength +1));
+        if (alignment == 0) { // x graph
+            int x = (int) (Math.random() * (fieldSize - shipLength + 1));
             int y = (int) (Math.random() * fieldSize);
-      
-            //build ship with specified length in "ship_length"
+
+            // build ship with specified length in "ship_length"
             for (int i = 0; i < shipLength; i++) {
-                cells.add( toAlphabetic(y) + (x+i));
+                cells.add(toAlphabetic(y) + (x + i));
             }
 
         }
-        if (alignment == 1){ // y graph
+        if (alignment == 1) { // y graph
             int x = (int) (Math.random() * fieldSize);
-            int y = (int) (Math.random() * (fieldSize - shipLength +1));
-      
-            //build ship with specified length in "ship_length"
+            int y = (int) (Math.random() * (fieldSize - shipLength + 1));
+
+            // build ship with specified length in "ship_length"
             for (int i = 0; i < shipLength; i++) {
-                cells.add( toAlphabetic(y+i) + (x));
+                cells.add(toAlphabetic(y + i) + (x));
             }
 
         }
         return cells;
     }
 
-    public void startGame(){
+    public void startGame() {
         int totalTips = 0;
         boolean alive = true;
 
-        while (alive){
+        while (alive) {
             printGame();
-            Scanner myScanner = new Scanner(System.in);  // Create a Scanner object
+            Scanner myScanner = new Scanner(System.in); // Create a Scanner object
             System.out.println("Tip?");
 
             String tip = myScanner.nextLine().toUpperCase();
             Iterator<Ship> itr = Ships.iterator();
 
-            while (itr.hasNext()){
+            while (itr.hasNext()) {
 
                 Ship ship = itr.next();
 
                 String result = ship.checkYourself(tip);
                 System.out.println(result);
 
-                if (result.equals("submerged")){
+                if (result.equals("submerged")) {
                     itr.remove();
                 }
             }
 
             totalTips++;
-            if (Ships.isEmpty()){
+            if (Ships.isEmpty()) {
                 alive = false;
                 System.out.println(totalTips + " tips needed");
             }
@@ -242,23 +236,23 @@ public class BattleShip {
 
     }
 
-    //not my code
+    // not my code
     public static String toAlphabetic(int i) {
 
         // negative numbers
-        if( i<0 ) {
-            return "-"+toAlphabetic(-i-1);
+        if (i < 0) {
+            return "-" + toAlphabetic(-i - 1);
         }
 
         // toAlphabetic function
-        int quot = i/26;
-        int rem = i%26;
-        char letter = (char)((int)'A' + rem);
+        int quot = i / 26;
+        int rem = i % 26;
+        char letter = (char) ((int) 'A' + rem);
 
-        if( quot == 0 ) {
-            return ""+letter;
+        if (quot == 0) {
+            return "" + letter;
         } else {
-            return toAlphabetic(quot-1) + letter;
+            return toAlphabetic(quot - 1) + letter;
         }
     }
 }
