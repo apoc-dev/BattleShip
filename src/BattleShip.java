@@ -55,7 +55,7 @@ public class BattleShip {
                         if (cell.equals((toAlphabetic(row)) + Integer.toString(column))) {
 
                             System.out.print(ship.getColor() + "X");
-                            System.out.print(color.ANSI_RESET);
+                            System.out.print(TerminalColours.ANSI_RESET);
                             columnPrinted = true;
                         }
                     }
@@ -82,66 +82,63 @@ public class BattleShip {
         for (int i = 0; i < numberOfShipsToPlace; i++) {
             ships.add(new Ship(color.randomTerminalColor()));
         }
-        
-        if(!placeShips(numberOfShipsToPlace)){
+
+        if (!placeShips(numberOfShipsToPlace)) {
             System.out.println("Ship placement failed. Terminating.");
             System.exit(1);
         }
 
-
     }
 
-    private boolean placeShips(int shipsToPlace){
-        
-        int maxDepth = 100;
+    private boolean placeShips(int shipsToPlace) {
+
+        int maxTries = 100;
         int maxBacktrackTries = 10;
-        int currentBacktrackIndex = 0;
-        int currentDepth = 0;
+        int currentBacktrackTrie = 0;
+        int backtrackStep = 1;
+        int currentTry = 0;
         int currentShipIndex = 0;
-        int backtrackIndex = 1;
         ArrayList<String> randomCells;
 
-        while(currentShipIndex < shipsToPlace){
+        while (currentShipIndex < shipsToPlace) {
 
             randomCells = generateCells();
 
-            if(!isCollision(randomCells)){
+            if (!isCollision(randomCells)) {
                 ships.get(currentShipIndex).setCells(randomCells);
                 currentShipIndex++;
-                currentDepth = 0;
-            }else{
-                currentDepth++;
+                currentTry = 0;
+            } else {
+                currentTry++;
             }
 
-            if(currentDepth >= maxDepth){
-                if(currentBacktrackIndex > maxBacktrackTries){
-                    backtrackIndex++;
-                    currentBacktrackIndex = 0;
-                    currentShipIndex = currentShipIndex - backtrackIndex;
-                }else{
+            if (currentTry >= maxTries) {
+                if (currentBacktrackTrie > maxBacktrackTries) {
+                    backtrackStep++;
+                    currentBacktrackTrie = 0;
+                    currentShipIndex = currentShipIndex - backtrackStep;
+                } else {
                     currentShipIndex--;
-                    currentBacktrackIndex++;
+                    currentBacktrackTrie++;
                 }
-                if(currentShipIndex < 0){
-                    currentShipIndex = 0;
+                if (currentShipIndex < 0) {
+                    currentShipIndex = 0; // this may be wrong behaviour if there is no solution for ship placement
                 }
-                resetShips(currentShipIndex);
-                currentDepth = 0;
+                resetShips(currentShipIndex); // to set all cells of ships above this back to null
+                currentTry = 0;
             }
 
         }
-        
+
         return true;
 
     }
 
-    private void resetShips(int newEnd){
-        for(int shipIndex = newEnd; shipIndex < numberOfShipsToPlace; shipIndex++){
+    private void resetShips(int newEnd) {
+        for (int shipIndex = newEnd; shipIndex < numberOfShipsToPlace; shipIndex++) {
             ships.get(shipIndex).setCells(new ArrayList<String>());
         }
     }
-
-
 
     public boolean isCollision(ArrayList<String> cells) {
 
@@ -185,13 +182,12 @@ public class BattleShip {
     public void startGame() {
         int totalTips = 0;
         boolean alive = true;
-
         while (alive) {
             printGame();
-            Scanner myScanner = new Scanner(System.in); // Create a Scanner object
+            Scanner scanner = new Scanner(System.in); // Create a Scanner object
             System.out.println("Tip?");
 
-            String tip = myScanner.nextLine().toUpperCase();
+            String tip = scanner.nextLine().toUpperCase();
             Iterator<Ship> itr = ships.iterator();
 
             while (itr.hasNext()) {
@@ -211,6 +207,8 @@ public class BattleShip {
                 alive = false;
                 System.out.println(totalTips + " tips needed");
             }
+
+            scanner.close();
 
         }
 
